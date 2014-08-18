@@ -3,7 +3,7 @@
  * @package WP_MinCat
  */
 
-class WP_MinCat {
+class WP_MinCat_Scripts {
 
     /* Properties
     ---------------------------------------------------------------------------------- */
@@ -34,14 +34,14 @@ class WP_MinCat {
     /**
      * Instance of the class.
      *
-     * @var WP_MinCat
+     * @var WP_MinCat_Scripts
      */
     protected static $instance = null;
 
     /**
      * Get accessor method for instance property.
      *
-     * @return WP_MinCat Instance of the class.
+     * @return WP_MinCat_Scripts Instance of the class.
      */
     public static function get_instance() {
 
@@ -52,27 +52,6 @@ class WP_MinCat {
         }
 
         return self::$instance;
-
-    }
-
-    /* Version
-    ---------------------------------------------- */
-
-    /**
-     * Version, used for cache-busting of style and script file references.
-     *
-     * @var string
-     */
-    protected $version = '0.0.0';
-
-    /**
-     * Getter method for version.
-     *
-     * @return string Plugin version.
-     */
-    public function get_version() {
-
-        return $this->version;
 
     }
 
@@ -88,6 +67,7 @@ class WP_MinCat {
         ---------------------------------------------- */
 
         // All scripts.
+        add_action( 'script_loader_src',  array( $this, 'remove_normal_wordpress_scripts' ), PHP_INT_MAX );
         add_action( 'wp_print_scripts',  array( $this, 'process_scripts' ), PHP_INT_MAX );
 
         // Head scripts.
@@ -96,32 +76,6 @@ class WP_MinCat {
         // Footer scripts.
         add_filter( 'print_footer_scripts',  array( $this, 'disable_normal_wordpress_scripts_print' ), PHP_INT_MAX );
         add_action( 'wp_print_footer_scripts',  array( $this, 'print_mincat_footer_scripts' ), PHP_INT_MAX );
-
-        // Other...
-//        add_filter( 'print_scripts_array',  array( $this, 'load_plugin_textdomain' ), PHP_INT_MAX, 10 );
-        add_action( 'script_loader_src',  array( $this, 'remove_normal_wordpress_scripts' ), PHP_INT_MAX );
-
-
-        /* CSS
-        ---------------------------------------------- */
-
-        // Head.
-//        add_action( 'style_loader_src', 'my_style_loader_src', PHP_INT_MAX, 10 );
-
-        // Footer.
-//        add_filter( 'print_late_styles', 'my_print_late_styles', PHP_INT_MAX, 10 );
-
-//        function my_style_loader_src( $one, $two, $three, $four, $five, $six, $seven, $eight, $nine, $ten ) {
-//
-//            $i = 0;
-//
-//        }
-//
-//        function my_print_late_styles( $one, $two, $three, $four, $five, $six, $seven, $eight, $nine, $ten ) {
-//
-//
-//
-//        }
 
     }
 

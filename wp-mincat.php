@@ -38,6 +38,12 @@ if ( ! class_exists( 'WP_MinCat' ) ) {
 
     require_once __DIR__ . '/classes/class-wp-mincat.php';
 
-    WP_MinCat::get_instance();
+}
+
+if ( ! class_exists( 'WP_MinCat_Scripts' ) ) {
+
+    require_once __DIR__ . '/classes/class-wp-mincat-scripts.php';
+
+    WP_MinCat_Scripts::get_instance();
 
 }
