@@ -3,30 +3,10 @@
  * @package WP_MinCat
  */
 
-class WP_MinCat_Scripts {
+class WP_MinCat_Styles {
 
     /* Properties
     ---------------------------------------------------------------------------------- */
-
-    /* Footer Scripts
-    ---------------------------------------------- */
-
-    /**
-     * All scripts loaded in the footer.
-     *
-     * @var array
-     */
-    private $footer_scripts = array();
-
-    /* Head Scripts
-    ---------------------------------------------- */
-
-    /**
-     * All scripts loaded in the head.
-     *
-     * @var array
-     */
-    private $head_scripts = array();
 
     /* Instance
     ---------------------------------------------- */
@@ -34,14 +14,14 @@ class WP_MinCat_Scripts {
     /**
      * Instance of the class.
      *
-     * @var WP_MinCat_Scripts
+     * @var WP_MinCat_Styles
      */
     protected static $instance = null;
 
     /**
      * Get accessor method for instance property.
      *
-     * @return WP_MinCat_Scripts Instance of the class.
+     * @return WP_MinCat_Styles Instance of the class.
      */
     public static function get_instance() {
 
@@ -55,6 +35,17 @@ class WP_MinCat_Scripts {
 
     }
 
+    /* Styles
+    ---------------------------------------------- */
+
+    /**
+     * All styles.
+     *
+     * @var array
+     */
+    private $styles = array();
+    private $styles_loaded = false;
+
     /* Constructor
     ---------------------------------------------------------------------------------- */
 
@@ -63,78 +54,114 @@ class WP_MinCat_Scripts {
      */
     public function __construct() {
 
-        // All scripts.
-        add_action( 'script_loader_src',  array( $this, 'remove_normal_wordpress_scripts' ), PHP_INT_MAX );
-        add_action( 'wp_print_scripts',  array( $this, 'process_scripts' ), PHP_INT_MAX );
+        // Head.
+//        add_action( 'wp_print_styles', array( $this, 'process_styles' ), PHP_INT_MAX );
+//        add_filter( 'style_loader_src', array( $this, 'remove_normal_wordpress_styles' ), PHP_INT_MAX );
 
-        // Head scripts.
-        add_filter( 'print_head_scripts',  array( $this, 'disable_normal_wordpress_scripts_print' ), PHP_INT_MAX );
+        // Footer.
+//        add_filter( 'print_late_styles', array( $this, 'my_print_late_styles' ), PHP_INT_MAX );
 
-        // Footer scripts.
-        add_filter( 'print_footer_scripts',  array( $this, 'disable_normal_wordpress_scripts_print' ), PHP_INT_MAX );
-        add_action( 'wp_print_footer_scripts',  array( $this, 'print_mincat_footer_scripts' ), PHP_INT_MAX );
+        // Other...
+//        add_action( 'wp_default_styles', array( $this, 'my_wp_default_styles' ), PHP_INT_MAX, 10 );
+        add_filter( 'print_styles_array', array( $this, 'my_print_styles_array' ), PHP_INT_MAX );
+//        add_filter( 'style_loader_tag', array( $this, 'my_style_loader_tag' ), PHP_INT_MAX, 10 );
+//        add_action( 'wp_head', array( $this, 'my_wp_head' ), PHP_INT_MAX );
 
     }
 
     /* Methods
     ---------------------------------------------------------------------------------- */
 
-    public function disable_normal_wordpress_scripts_print() {
+    public function process_styles() {
 
-        // Disable the scripts WordPress normally prints out.
-        return false;
+        global $wp_styles;
 
-    }
-
-    public function print_mincat_footer_scripts() {
-
-        // Print footer scripts.
-        $this->mincat_and_print_scripts( $this->footer_scripts, true );
+        $i = 0;
 
     }
 
-    public function process_scripts() {
-
-        global $wp_scripts;
-
-        // Wait until scripts have been broken out into their head and footer groups.
-        if ( $wp_scripts->group ) {
-
-            // Get head and footer scripts.
-            $this->head_scripts = $wp_scripts->done;
-            $this->footer_scripts = $wp_scripts->in_footer;
-
-            // Print head scripts.
-            $this->mincat_and_print_scripts( $this->head_scripts );
-
-        }
-
-    }
-
-    function remove_normal_wordpress_scripts() {
+    public function remove_normal_wordpress_styles() {
 
         /*
-         * Forcibly remove normal WordPress scripts being printed because the
-         * `print_footer_scripts` and `print_head_scripts` don't actually seem to work.
+         * Forcibly remove normal WordPress styles being printed since there is no WordPress hook
+         * to exclude styles like you can with scripts.
          */
 
         return '';
 
     }
 
+    public function my_print_late_styles( $one ) {
+
+        global $wp_styles;
+
+        $i = 0; // `$one` comes in as `true`, for whatever reason.
+
+        return false;
+
+    }
+
+    function my_wp_default_styles( $one, $two, $three, $four, $five, $six, $seven, $eight, $nine, $ten ) {
+
+        global $wp_styles;
+
+        $i = 0; // Doesn't really seem necessary... First the first of all the hooks.
+
+    }
+
+    function my_print_styles_array( $style_handles ) {
+
+        global $wp_styles;
+
+        $i = 0; // `$one` is an array of slugs, but for some reason, WordPress calls it twice. But dependencies have been ordered correctly by now.
+
+        $this->styles = $style_handles;
+
+        if ( ! $this->styles_loaded ) {
+
+            $this->mincat_and_print_styles( $this->styles );
+
+            $this->styles_loaded = true;
+
+        }
+
+        $wp_styles->queue = array();
+
+        return array();
+
+    }
+
+    function my_style_loader_tag( $one, $two, $three, $four, $five, $six, $seven, $eight, $nine, $ten ) {
+
+        global $wp_styles;
+
+        $i = 0; // Doesn't get called for some reason.
+
+    }
+
+    function my_wp_head() {
+
+        global $wp_styles;
+
+        $i = 0;
+
+        $this->mincat_and_print_styles( $wp_styles->done );
+
+    }
+
     /* Helpers
     ---------------------------------------------------------------------------------- */
 
-    private function get_scripts_content( $script_handles ) {
+    private function get_styles_content( $style_handles ) {
 
-        global $wp_scripts;
+        global $wp_styles;
 
         $contents = '';
 
-        foreach ( $script_handles as $handle ) {
+        foreach ( $style_handles as $handle ) {
 
             // Look up registered script using the handle.
-            $script = $wp_scripts->registered[ $handle ];
+            $script = $wp_styles->registered[ $handle ];
 
             // Get the scripts source.
             $src = $script->src;
@@ -149,11 +176,22 @@ class WP_MinCat_Scripts {
 
             // TODO: See if we can get script contents without turning them into urls, as local file path reads should be faster.
 
+            // Check for schemeless url.
+            if ( '//' === substr( $src, 0, 2 ) ) {
+
+                // Get scheme.
+                $scheme = ( is_ssl() ) ? 'https:' : 'http:';
+
+                // Add scheme.
+                $src = $scheme . $src;
+
+            }
+
             // Check source is a valid url.
             if ( ! filter_var( $src, FILTER_VALIDATE_URL ) ) {
 
                 // Source appears to be a relative path, so make it legit url.
-                $src = $wp_scripts->base_url . $src;
+                $src = $wp_styles->base_url . $src;
 
                 // Check source is a valid url.
                 if ( ! filter_var( $src, FILTER_VALIDATE_URL ) ) {
@@ -176,7 +214,7 @@ class WP_MinCat_Scripts {
 
     }
 
-    private function mincat_and_print_scripts( $script_handles, $async = false ) {
+    private function mincat_and_print_styles( $style_handles ) {
 
         // Assume files are already minified.
         $suffix = '.min';
@@ -191,8 +229,8 @@ class WP_MinCat_Scripts {
 
         // TODO: Need to include version numbers in the reidentifiable slug.
 
-        // Create a reidentifiable slug of all the scripts included.
-        $header_scripts_slug = implode( '.', $script_handles );
+        // Create a reidentifiable slug of all the styles included.
+        $header_scripts_slug = implode( '.', $style_handles );
 
         // Create a shorter, reidentifiable slug of all the scripts included, just in case there are a slew of scripts.
         $header_scripts_md5 = md5( $header_scripts_slug );
@@ -209,13 +247,13 @@ class WP_MinCat_Scripts {
         }
 
         // Get the filename of the scripts included in this head.
-        $header_scripts_filename = trailingslashit( $mincat_dir ) . $header_scripts_md5 . $suffix . '.js';
+        $header_scripts_filename = trailingslashit( $mincat_dir ) . $header_scripts_md5 . $suffix . '.css';
 
         // Check if the file already exists so we can skip recreating it every time and just serve the existing one.
         if ( ! file_exists( $header_scripts_filename ) ) {
 
             // Get all of the scripts contents.
-            $scripts_contents = $this->get_scripts_content( $script_handles );
+            $scripts_contents = $this->get_styles_content( $style_handles );
 
             // Write the contents to a file.
             file_put_contents( $header_scripts_filename , $scripts_contents );
@@ -226,21 +264,10 @@ class WP_MinCat_Scripts {
         // TODO: Reactor to resue `$header_scripts_md5 . $suffix . '.js'` from above when creating `$header_scripts_filename`.
 
         // Get relative source path to mincat file.
-        $src = '/wp-content/mincat/' . $header_scripts_md5 . $suffix . '.js';
-
-        // Assume async is not enabled.
-        $async_string = '';
-
-        // Check async flag.
-        if ( $async ) {
-
-            // Load script asynchronously.
-            $async_string = ' async';
-
-        }
+        $src = '/wp-content/mincat/' . $header_scripts_md5 . $suffix . '.css';
 
         // Add script tag for mincat file.
-        echo '<script type="text/javascript" src="' . $src . '"' . $async_string . '></script>' . PHP_EOL;
+        echo '<link rel="stylesheet" href="' . $src . '" type="text/css" media="all" />' . PHP_EOL;
 
     }
 

@@ -47,3 +47,11 @@ if ( ! class_exists( 'WP_MinCat_Scripts' ) ) {
     WP_MinCat_Scripts::get_instance();
 
 }
+
+if ( ! class_exists( 'WP_MinCat_Styles' ) ) {
+
+    require_once __DIR__ . '/classes/class-wp-mincat-styles.php';
+
+    WP_MinCat_Styles::get_instance();
+
+}
